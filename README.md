@@ -1,6 +1,6 @@
 # CSC463-Socket-Programming
 
-This project aims to teach you how to build a build a simple centralized file sharing system using socket programming. In this project, you need to learn the design principle of centralized file sharing system and complete the program provided by instructor . Detailed instructions will be provided in class lectures. The source codes are available on BlackBoard.
+This project aims to teach you how to build a simple centralized file sharing system using socket programming. In this project, you need to learn the design principle of centralized file sharing system and complete the program provided by instructor . Detailed instructions will be provided in class lectures. The source codes are available on BlackBoard.
 
 ## Requirements
 
@@ -28,4 +28,4 @@ You need to submit all the source code to GitHub
 - Report format (**10%**)
 - Design and Implementation  (**60%**)
 - Test  (**20%**)
-- User manual ({**10%**)
+- User manual (**10%**)
