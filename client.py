@@ -13,7 +13,7 @@ class client:
 
     #Constructor: load client configuration from config file
     def __init__(self):
-        self.serverName, self.serverPort, self.clientPort, self.downloadPath = config.config().readClientConfig()
+                self.serverName, self.serverPort, self.clientPort, self.downloadPath, self.uploadPath = config.config().readClientConfig()
 
     # Function to produce user menu 
     def printMenu(self):
@@ -22,24 +22,23 @@ class client:
         print("--------------------------------------")
         print("1. Review the List of Available Files")
         print("2. Download File")
-        # *******************************
-        # ADD one line here for uploading files
-        print("3. Quit")
+        print("3. Upload File")
+        print("4. Quit")
 
     # Function to get user selection from the menu
     def getUserSelection(self):       
         ans=0
-        # only accept option 1-3
+        # only accept option 1-4
         # ******************************
         # When you add upload option, you need to modify the number of options
         # you accept
-        while ans>3 or ans<1:
+        while ans>4 or ans<1:
             self.printMenu()
             try:
                 ans=int(input())
             except:
                 ans=0
-            if (ans<=3) and (ans>=1):
+            if (ans<=4) and (ans>=1):
                 return ans
             print("Invalid Option")
 
@@ -109,8 +108,30 @@ class client:
     #********************************************
     # Please complete the upLoadFile function, the function takes a file name as
     # an input
-    def upLoadFile(self,fileName):
-        pass
+    def upLoadFile(self, fileName):
+        mySocket = self.connect()
+        mySocket.sendall(protocol.prepareMsg(protocol.HEAD_UPLOAD, fileName))
+
+        if mySocket.recv(1024) != b"OK":
+            print("Upload request failed.")
+            mySocket.close()
+            return
+
+        with open(os.path.join(self.uploadPath, fileName), "rb") as f:
+            while True:
+                data = f.read(1024)
+                if not data:
+                    break
+                mySocket.sendall(data)
+
+        mySocket.shutdown(SHUT_WR)
+
+        if mySocket.recv(1024) == b"OK":
+            print(fileName + " has been uploaded!")
+        else:
+            print("Upload failed.")
+
+        mySocket.close()
 
 
     #********************************************
@@ -120,25 +141,41 @@ class client:
     # The reture value should be a file name
 
     def selectUploadFile(self):
-        pass
+        files = os.listdir(self.uploadPath)
+
+        if len(files) == 0:
+            print("No files available to upload.")
+            return None
+
+        for i in range(len(files)):
+            print(i + 1, files[i])
+
+        print("Select a file to upload:")
+        ans = int(input())
+
+        if ans >= 1 and ans <= len(files):
+            return files[ans - 1]
+
+        print("Invalid selection")
+        return None
         
     # Main logic of the clien, start the client application
     def start(self):
         opt=0
-        while opt!=3:
+        while opt!=4:
             opt=self.getUserSelection()
             if opt==1:
-                if(len(self.fileList)==0):
-                    self.getFileList()
+                self.getFileList()
                 self.printFileList()                  
             elif opt==2:
                 self.downloadFile(self.selectDownloadFile())
+            elif opt==3:
+                fileName = self.selectUploadFile()
+                if fileName is not None:
+                    self.upLoadFile(fileName)
 
-            #**************************
-            # You need another option for uploading files
-            else:
-                pass
-                
+            
+
 def main():
     c=client()
     c.start()

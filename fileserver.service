@@ -1,0 +1,15 @@
+[Unit]
+Description=Python File Sharing Server
+After=network-online.target
+RequiresMountsFor=/mnt/nfs/shared
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/fileserver
+ExecStart=/usr/bin/python3 -u /opt/fileserver/Server.py
+User=fileserver
+Group=fileserver
+Restart=no
+
+[Install]
+WantedBy=multi-user.target

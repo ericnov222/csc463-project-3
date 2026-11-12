@@ -29,6 +29,22 @@ class server:
             serverSocket.send(l)
             l = f.read(1024)
 
+    # Function to receive a file from the client
+    def receiveFile(self, serverSocket, fileName):
+        fileName = os.path.basename(fileName)
+        filePath = os.path.join(self.path, fileName)
+
+        with open(filePath, "wb") as f:
+            serverSocket.sendall(b"OK")
+
+            while True:
+                data = serverSocket.recv(1024)
+                if not data:
+                    break
+                f.write(data)
+
+        serverSocket.sendall(b"OK")
+        print(fileName + " has been uploaded!")
     # Main function of server, start the file sharing service
     def start(self):
         serverPort=self.port
@@ -36,19 +52,22 @@ class server:
         serverSocket.bind(('',serverPort))
         serverSocket.listen(20)
         print('The server is ready to receive')
+
         while True:
             connectionSocket, addr = serverSocket.accept()
             dataRec = connectionSocket.recv(1024)
-            header,msg=protocol.decodeMsg(dataRec.decode()) # get client's info, parse it to header and content
-            # Main logic of the program, send different content to client according to client's requests
+            header,msg=protocol.decodeMsg(dataRec.decode())
+
             if(header==protocol.HEAD_REQUEST):
                 self.listFile(connectionSocket)
             elif(header==protocol.HEAD_DOWNLOAD):
                 self.sendFile(connectionSocket, self.path+"/"+msg)
+            elif(header==protocol.HEAD_UPLOAD):
+                self.receiveFile(connectionSocket, msg)
             else:
                 connectionSocket.send(protocol.prepareMsg(protocol.HEAD_ERROR, "Invalid Message"))
-            connectionSocket.close()
 
+            connectionSocket.close()
 def main():
     s=server()
     s.start()
